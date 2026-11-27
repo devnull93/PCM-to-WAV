@@ -176,11 +176,11 @@
       document.getElementById("meta-duration").textContent = (float32Data.length / sampleRate).toFixed(2) + " s";
       document.getElementById("meta-size").textContent = (wavBlob.size / 1024).toFixed(1) + " KB";
 
-      drawWaveform(float32Data);
+      drawWaveform(float32Data, 0);
       updateStatus("WAV Encoded", true);
    }
 
-   function drawWaveform(samples) {
+   function drawWaveform(samples, trackerX = 0) {
       canvasPlaceholder.style.display = "none";
       const ctx = canvas.getContext("2d");
       const DPR = window.devicePixelRatio || 1;
@@ -230,6 +230,12 @@
       }
 
       ctx.stroke();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.beginPath();
+      ctx.moveTo(trackerX, 0);
+      ctx.lineTo(trackerX, height);
+      ctx.stroke();
    }
 
    function updateStatus(text, isActive) {
@@ -240,3 +246,14 @@
           statusBadge.classList.remove("active");
       }
    }
+
+   audioPlayer.addEventListener("timeupdate", () => {
+      if (!audioPlayer.duration) return;
+      const playbackPercent = audioPlayer.currentTime / audioPlayer.duration;
+      const trackerPositionX = canvas.parentElement.clientWidth * playbackPercent;
+
+      const float32Data = parseToFloat32Array();
+      if (float32Data) {
+          drawWaveform(float32Data, trackerPositionX);
+      }
+   });
